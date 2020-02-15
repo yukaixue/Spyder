@@ -43,6 +43,7 @@ def drawDate(date):
         else:
             drawDigit(eval(i))
 def main():
+    turtle.title('来自学学的爱')
     turtle.setup(800,400,200,200)
     turtle.ht()
     turtle.penup()
@@ -56,7 +57,7 @@ def main():
     turtle.goto(-350,n)
     turtle.colormode(255)
     if time.strftime('%Y-%m=%d+',time.gmtime()) == '2020-02=14+':
-        for i in '亲爱的星星，亲爱的老婆：今天是情节人，祝你情人节快乐哟，余大傻永远爱你，么么哒！':
+        for i in '亲爱的星星，亲爱的老婆：今天是情人节，祝你情人节快乐哟，余大傻永远爱你，么么哒！':
             RGB = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
             turtle.pencolor(RGB)
             time.sleep(0.2)
