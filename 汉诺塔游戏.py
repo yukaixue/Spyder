@@ -15,5 +15,5 @@ def hanoi(n,src,dst,mid):
         print('{}:{}->{}'.format(n,src,dst))
         count +=1
         hanoi(n-1,mid,dst,src)
-hanoi(3,'左','右','中')
+hanoi(2,'左','右','中')
 print(count)

@@ -10,7 +10,7 @@ import time
 import random
 
 dic = {'3':1,'4':2,'5':3,'6':4,'7':5,'8':6,'9':7,'10':8,'J':9,'Q':10,'K':11,'A':12,'2':13,'小王':14,'大王':15}
-guize_dic = {'一张':1, '一对':2, '三个':300, '炸弹,四个':400, '王炸':11, '三带一':301, '三带一对':302, '小飞机':303, '四带一对': 402, '四带两个':411, '三连对':222, '四带两对':422, '四连对':2222, '顺子':888, '连对':666}
+guize_dic = {'一张':1, '一对':2, '三个':300, '炸弹,四个':400, '王炸':11, '三带一':301, '三带一对':302, '小飞机':303, '大飞机':3113, '四带一对': 402, '四带两个':411, '三连对':222, '四带两对':422, '四连对':2222, '顺子':888, '连对':666}
 def strr_2_lst(strr): #出牌转换成列表
     strr = strr.strip()
     lst = strr.split(' ')
@@ -102,14 +102,14 @@ def kanpai():   #以字符串的形式显示手牌并记录上一次发的牌
 def xipai():   #洗牌进度条
     for i in range(1, 31):
         a = '>' * i
-        b = '_' * (30-i)
+        b = '<' * (30-i)
         bili = (i/30) * 100
         time.sleep(0.2)
-        print('\r{}: {:.1f}%[{}{}]'.format('小傻瓜洗牌完成' if bili == 100 else '小傻瓜在洗牌中', bili, a, b), end='')
+        print('\r{}: {:.0f}%[{}{}]'.format('小傻瓜洗牌完成' if bili == 100 else '小傻瓜在洗牌中', bili, a, b), end='')
 
 
 def xuanpai():   #玩家选牌
-    global youpai, Apai, Bpai, xuan_pai
+    global youpai, Apai, Bpai, xuan_pai, chenghu
     xuan_pai = []
     for item in kanpai():
         xuan_pai.append(item)
@@ -145,7 +145,7 @@ def xuanpai():   #玩家选牌
 
 
 def jiaodizhu():
-    global youpai, xuan_pai, new_you_pai
+    global youpai, xuan_pai, new_you_pai, chenghu
     print_('亲爱的{},你的手牌这么好，叫个地主吧(●ˇ∀ˇ●)'.format(chenghu))
     j = input('我要叫地主(Y or N)：')
     if j in ['Y', 'y']:
@@ -189,7 +189,7 @@ def xianshi_chupai(lst):
     new_lst = lst_paixu(lst)[1]
     items_lst = count_pai(new_lst)
     chupai = ''
-    for item in items_lst[::-1]:
+    for item in items_lst:
         chupai += item[0] * item[1]
     ID = guize(lst)
     if ID:
@@ -215,7 +215,7 @@ def guize(lst):
             return 400 #四个炸弹
     elif len(items_lst) == 2:
         if len(new_lst) == 2:
-            if new_lst == [('小王', 14), ('大王', 15)]:
+            if new_lst==[('小王', 14), ('大王', 15)]:
                 return 11 #王炸
             else:
                 return False  #出牌不符合规则
@@ -262,7 +262,10 @@ def guize(lst):
                 else:
                     return False   #出牌不符合规则
             elif items_lst[2][1] == items_lst[3][1] == 3:
-                return 313   #大飞机
+                if ((dic[items_lst[3][0]]-dic[items_lst[2][0]])==1) and (dic[items_lst[3][0]]<13):
+                    return 3113   #大飞机
+                else:
+                    return False
             else:
                 return False
         else:
@@ -277,7 +280,7 @@ def guize(lst):
 
 
 def youchu():  
-    global youpai, new_you_pai, mark_xianshi_chupai, youchu_lst, mark_A_Bchu, mark
+    global youpai, new_you_pai, mark_xianshi_chupai, youchu_lst, mark_A_Bchu, mark, chenghu
     _you_pai = []
     for item in youpai:
         _you_pai.append(item[0])
@@ -289,21 +292,26 @@ def youchu():
         mark = True
     else:     
         for item in youchu_lst:
-            if item in _you_pai:
-                xianshi_chupai(youchu_lst)
-                if mark_xianshi_chupai:
-                    _you_pai.remove(item)
-                else:
-                    youchu()
+            if (item in _you_pai) and (youchu_lst.count(item) <= _you_pai.count(item)):
+                a = 1
             else:
-                print("不存在,重新出牌！")
+                a = 0
+        if a == 1:
+            xianshi_chupai(youchu_lst)
+            if mark_xianshi_chupai:
+                for item in youchu_lst:
+                    _you_pai.remove(item)
+                new_you_pai = ''.join(_you_pai)
+                print_('{}你好,你剩余的手牌是: {}'.format(chenghu, new_you_pai))
+                youpai.clear()
+                for item in _you_pai:
+                    youpai.append((item, dic[item]))
+                mark = False
+            else:
                 youchu()
-        new_you_pai = ''.join(_you_pai)
-        print_('{}你好,你剩余的手牌是: {}'.format(chenghu, new_you_pai))
-        youpai.clear()
-        for item in _you_pai:
-            youpai.append((item, dic[item]))
-        mark = False
+        else:
+            print("不存在,重新出牌！")
+            youchu()
     mark_A_Bchu = False
 
 
@@ -315,48 +323,42 @@ def A_Bchu(ABpai):
         else:
             print_('{}:请让我思考该出啥！>>>'.format('小星星'))
         while not mark_A_Bchu:
-            ABchu = []
             SUM = random.randint(1,len(ABpai))
-            items = random.sample(ABpai, SUM)
-            for item in items:
-                ABchu.append(item[0])
-            if guize(ABchu) in guize_dic.values():
-                mark_A_Bchu = True
+            for i in range(1000):
+                ABchu = []
+                items = random.sample(ABpai, SUM)
                 for item in items:
-                    ABpai.remove(item)
-                break
-    else:
-        ID_str = str(guize(youchu_lst))
-        SUM = len(youchu_lst)
-        for i in range(1000):
-            ABchu = []
-            items = random.sample(ABpai, SUM)
-            for item in items:
-                ABchu.append(item[0])
-            if guize(ABchu) == int(ID_str):
-                ABchu_items_lst = count_pai(items)
-                youchu_items_lst = count_pai(lst_paixu(youchu_lst)[1])
-                if dic[ABchu_items_lst[-1][0]] > dic[youchu_items_lst[-1][0]]:
+                    ABchu.append(item[0])
+                if guize(ABchu) in guize_dic.values():
                     mark_A_Bchu = True
                     for item in items:
                         ABpai.remove(item)
                     break
-        if mark_A_Bchu == False:
-            for item in count_pai(ABpai):
-                if item[1] == 4:
-                    ABchu = list(item[0]*item[1])
-                    for tup in ABpai:
-                        if tup[0] in ABchu:
-                            ABpai.remove(tup)
-                            mark_A_Bchu = True
-        if mark_A_Bchu == False:
-            if ABpai[-2:] == [('小王', 14), ('大王', 15)]:
+    else:
+        ID_str = str(guize(youchu_lst))
+        SUM = len(youchu_lst)
+        if len(ABpai) >= SUM:
+            for i in range(1000):
                 ABchu = []
-                ABchu.append(ABpai[-2][0])
-                ABchu.append(ABpai[-1][0])
-                ABpai.remove( ABpai[-2])
-                ABpai.remove( ABpai[-1])
-                mark_A_Bchu = True
+                items = random.sample(ABpai, SUM)
+                for item in items:
+                    ABchu.append(item[0])
+                if guize(ABchu) == int(ID_str):
+                    ABchu_items_lst = count_pai(items)
+                    youchu_items_lst = count_pai(lst_paixu(youchu_lst)[1])
+                    if dic[ABchu_items_lst[-1][0]] > dic[youchu_items_lst[-1][0]]:
+                        mark_A_Bchu = True
+                        for item in items:
+                            ABpai.remove(item)
+                        break
+            if mark_A_Bchu == False:
+                if ABpai[-2:] == [('小王', 14), ('大王', 15)]:
+                    ABchu = []
+                    ABchu.append(ABpai[-2][0])
+                    ABchu.append(ABpai[-1][0])
+                    ABpai.remove( ABpai[-2])
+                    ABpai.remove( ABpai[-1])
+                    mark_A_Bchu = True
     if youchu_lst == ['']:
         if ABpai == Apai:
             print_('{}:我出！>>>'.format('小学学'))
@@ -377,37 +379,60 @@ def A_Bchu(ABpai):
 
 
 def chupai():
-    global mark_A_Bchu, Apai, Bpai, youpai
+    global mark_A_Bchu, Apai, Bpai, youpai, mark, chenghu
     mark = False
     print_('亲爱的{},你是地主哦,请出牌\^o^/'.format(chenghu))
     while (len(youpai)>0) or (len(Apai)>0) or (len(Bpai)>0):
         if len(youpai) == 0:
-            print_('{:-^20}'.format('恭喜你，你赢啦'))
+            print_('{:-^20}'.format('恭喜你，你赢啦!!!'))
+            break
         elif (len(Apai)==0) or (len(Bpai)==0):
             print_('{:-^20}'.format('/(ㄒoㄒ)/~~输了'))
+            break
         else:
             if (len(Apai)==2) or (len(Bpai)==2):
                 print_('{:-^20}'.format('注意咯，我只有两张牌啦！！！'))
             youchu()
             if (mark_A_Bchu==False) and (mark==False):
                 A_Bchu(Apai)
+                if mark_A_Bchu:
+                    mark = True
+                else:
+                    mark = False
             else:
                 print_('{}:不要！>>>'.format('小学学'))
-            if not mark_A_Bchu:
+                mark = False
+            if (mark_A_Bchu==False) and (mark==False):
                 A_Bchu(Bpai)
                 if mark_A_Bchu:
                     mark = True
+                else:
+                    mark = False
             else:
                 print_('{}:不要！>>>'.format('小星星'))
                 mark = False
 
+def begin():
+    global end, chenghu
+    print_('欢迎来到<傻瓜斗地主>世界，我是裁判员<小傻瓜>。在这场游戏中，你需要选牌而且注定是地主，)')
+    print_('但是你必须规则出牌哟，这样才更有趣！(虽然你不按规则出牌会赢得更快。。。)')
+    print_('嗨,请问你是GG还是MM？(自己脑补语音QAQ)')
+    chenghu = input("请输入称呼: ")
+    if chenghu in ['小星星','王小猪','王星','王','星星','余大傻','余LG']:
+        print_('--------------------------致女朋友--------------------------------')
+        print_('小星星，我们斗地主老输让你很不开心，当时我就说要给你写一个斗地主不输的程序，')
+        print_('现在，我兑现了我的诺言，希望你天天开心！')
+        print_('-----------------------------------------------------------------')
+    print_('{}你好,现在开始你的斗地主旅程吧QAQ❤'.format(chenghu))
+    print_('小傻瓜准备洗牌哦，请稍等')
+    xipai()
+    print_('亲爱的{},想看所有玩家的牌吗(●ˇ∀ˇ●)'.format(chenghu))
+    xuanpai()
+    jiaodizhu()
+    chupai()
+    end = input('傻瓜斗地主这么好玩，请问还要再来一局吗？<Y(再来一局) or N(退出)>: ')
+
+begin()
+if end in ['Y', 'y']:
+    begin()
     
-print_('嗨,请问你是GG还是MM？(自己脑补语音QAQ)')
-chenghu = input("请输入称呼: ")
-print_('{}你好,欢迎来到傻瓜斗地主，现在开始你的斗地主旅程吧QAQ'.format(chenghu))
-print_('小傻瓜准备洗牌哦，请稍等')
-xipai()
-print_('亲爱的{},想看所有玩家的牌吗QAQ'.format(chenghu))
-xuanpai()
-jiaodizhu()
-chupai()
